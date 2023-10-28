@@ -15,7 +15,20 @@ public class Item
         RoastedMeat,
         StoneSword,
         PickAxe,
-        CampFire
+        CampFire,
+        
+        WoodenArrow,
+        IronIngot,
+        IronOre,
+        HealthPotion,
+        HealingHerb,
+        EmptyFlask,
+        SteelArmor,
+        Leather,
+        StoneWall,
+        
+        FireArrow,
+        FireEssence
     }
 
     [Serializable]

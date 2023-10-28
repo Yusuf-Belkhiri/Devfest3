@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -17,6 +18,19 @@ public class InventoryManager : MonoBehaviour
     
     [SerializeField] private Item.ItemNameSpriteMaps[] itemNameSpriteMaps;
 
+    
+    [SerializeField] private List<Item> _objectiveItems;
+    private int _checkedObjectivesNum;
+    [SerializeField] private Text _objectivesNumText;
+
+    // Interface
+    [SerializeField] private GameObject _gameWonMenu;
+    [SerializeField] private GameObject _gameOverMenu;
+    [SerializeField] private Slider _gameDurationSlider;
+
+    // Time
+    [SerializeField] private float _gameDuration = 15f;
+    private float _gameRemainingTime;
     #endregion
 
 
@@ -44,6 +58,10 @@ public class InventoryManager : MonoBehaviour
             _itemSlots[i] = _itemSlotsContainer.GetChild(i);
         }
         _items = new Item[_itemSlots.Length];
+        
+        Time.timeScale = 1;
+        _gameRemainingTime = _gameDuration;
+
     }
 
     public void AddItem(Item newItem)
@@ -95,24 +113,34 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+
+
+
     
     public void TryToCraftItem(Item craftedItem, Item[] itemsRecipe, int quantity)
     {
         var newItems = ObjectCopier.Clone(_items);
         foreach (var requiredItem in itemsRecipe)
         {
-            var item = Array.Find(newItems, item => item.Name == requiredItem.Name);
-            
-            // Fail
-            if (item == null || item.Amount < requiredItem.Amount * quantity)
+            try
             {
-                _craftOutputText.text = $"NOT ENOUGH {item.Name}, quantity:{item.Amount}, (required:{requiredItem.Amount * quantity})";
+                var item = Array.Find(newItems, item => item.Name == requiredItem.Name);
+            
+                // Fail
+                if (item == null || item.Amount < requiredItem.Amount * quantity)
+                {
+                    _craftOutputText.text = $"NOT ENOUGH {item.Name}, quantity:{item.Amount}, (required:{requiredItem.Amount * quantity})";
+                    return;
+                }
+                // Partial Success
+                item.Amount -= requiredItem.Amount * quantity;
+            
+                UpdateUI(Array.IndexOf(newItems, item));
+            }
+            catch (Exception)
+            {
                 return;
             }
-            // Partial Success
-            item.Amount -= requiredItem.Amount * quantity;
-            
-            UpdateUI(Array.IndexOf(newItems, item));
         }
 
          // Full Success: Craft
@@ -121,12 +149,57 @@ public class InventoryManager : MonoBehaviour
         _craftOutputText.text = $"Crafted: {craftedItem.Name} x {quantity}";
         
         UpdateUI();
+
+        foreach (var objectiveItem in _objectiveItems)
+        {
+            try
+            {
+                var it = Array.Find(_items, item => objectiveItem.Name == item.Name);
+                if (it != null && it.Amount >= objectiveItem.Amount)
+                {
+                    _checkedObjectivesNum++;
+                    _objectivesNumText.text = $"{_checkedObjectivesNum} / {_objectiveItems.Count}";
+                    objectiveItem.Name = Item.ItemName.Null;
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
     }
-    
-    
-    
+
+
+    private void Update()
+    {
+        if (_checkedObjectivesNum >= _objectiveItems.Count)
+        {
+            GameWon();
+        }
+        
+        _gameDurationSlider.value = _gameRemainingTime / _gameDuration;
+        _gameRemainingTime -= Time.deltaTime;
+
+        if (_gameRemainingTime <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    private void GameWon()
+    {
+        Time.timeScale = 0;
+        _gameWonMenu.SetActive(true);
+    }
+    private void GameOver()
+    {
+        Time.timeScale = 0;
+        _gameWonMenu.SetActive(true);
+    }
     public void RestartGame()
     {
+        Time.timeScale = 1;
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     #endregion
