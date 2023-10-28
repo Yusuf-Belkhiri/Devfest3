@@ -194,7 +194,7 @@ public class InventoryManager : MonoBehaviour
     private void GameOver()
     {
         Time.timeScale = 0;
-        _gameWonMenu.SetActive(true);
+        _gameOverMenu.SetActive(true);
     }
     public void RestartGame()
     {
