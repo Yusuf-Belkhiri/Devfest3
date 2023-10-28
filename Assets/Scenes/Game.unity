@@ -1607,7 +1607,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4534765384817571552, guid: 7abd4f0e54a104242a93e652b09fa172, type: 3}
       propertyPath: _item.<Amount>k__BackingField
-      value: 60
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 4534765384817571555, guid: 7abd4f0e54a104242a93e652b09fa172, type: 3}
       propertyPath: m_Name
